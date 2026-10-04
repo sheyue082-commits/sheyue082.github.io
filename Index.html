@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性格小测试</title>
+    <style>
+        *{box-sizing:border-box;font-family:system-ui}
+        body{max-width:700px;margin:30px auto;padding:20px;background:#f8f4f0}
+        .box{background:#fff;padding:28px;border-radius:20px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+        .question{margin:24px 0;display:none}
+        .question.active{display:block}
+        .q-title{font-weight:500;margin-bottom:16px;font-size:18px;line-height:1.5}
+        .opt{padding:12px 16px;border:1px solid #e2d9d0;border-radius:12px;margin:10px 0;cursor:pointer;transition:0.2s}
+        .opt:hover{background:#f7ede4;border-color:#d4b8a0}
+        .opt.selected{background:#e8d8c8;border-color:#b88c6c}
+        .btn{margin-top:28px;padding:13px 26px;border:none;background:#b88c6c;color:#fff;border-radius:12px;font-size:16px;cursor:pointer}
+        .btn:hover{background:#a27b5e}
+        .result{display:none;text-align:center}
+        .name{font-size:36px;font-weight:bold;color:#8b5e3c;margin-bottom:12px}
+        .tag{color:#b88c6c;font-size:18px;margin-bottom:20px}
+        .desc{line-height:1.7;font-size:16px;color:#444}
+        .progress{margin-bottom:20px;color:#888}
+    </style>
+</head>
+<body>
+<div class="box">
+    <div id="quiz">
+        <div class="progress" id="progressText"></div>
+        <!-- 题目，每个选项会给对应角色加分 -->
+        <div class="question active">
+            <div class="q-title">周末你更偏向？</div>
+            <div class="opt" data-score="春山:2">出门逛展、探店、和朋友出去玩</div>
+            <div class="opt" data-score="桃子:2">补觉，休息回血，处理工作琐事</div>
+            <div class="opt" data-score="兔兔:2">随便发呆，脑洞乱飞，做点奇怪有趣的事</div>
+            <div class="opt" data-score="肖肖:2">宅在家里，追剧打游戏，不想出门</div>
+            <div class="opt" data-score="慕慕:2">独处思考，看看书，安静沉浸自己世界</div>
+        </div>
+        <div class="question">
+            <div class="q-title">遇到烦心事你会？</div>
+            <div class="opt" data-score="春山:2">找朋友倾诉，很快调整好状态</div>
+            <div class="opt" data-score="桃子:2">默默扛着，优先把手头事情做完</div>
+            <div class="opt" data-score="兔兔:2">用搞笑方式化解，抽象看待烦恼</div>
+            <div class="opt" data-score="肖肖:2">暂时逃避，躲进自己的小世界</div>
+            <div class="opt" data-score="慕慕:2">向内消化，深度思考情绪根源</div>
+        </div>
+        <div class="question">
+            <div class="q-title">别人对你的印象更接近？</div>
+            <div class="opt" data-score="春山:2">元气满满，永远充满活力</div>
+            <div class="opt" data-score="桃子:2">靠谱稳重，打工人感拉满</div>
+            <div class="opt" data-score="兔兔:2">想法跳脱，很难被定义</div>
+            <div class="opt" data-score="肖肖:2">安静佛系，不爱社交</div>
+            <div class="opt" data-score="慕慕:2">心思细腻，洞察力很强</div>
+        </div>
+        <div class="question">
+            <div class="q-title">空闲时间更喜欢？</div>
+            <div class="opt" data-score="春山:2">探索新鲜事物，出门感受生活</div>
+            <div class="opt" data-score="桃子:2">短暂放松，快速恢复精力</div>
+            <div class="opt" data-score="兔兔:2">胡思乱想，玩一些无意义的乐子</div>
+            <div class="opt" data-score="肖肖:2">看番/玩游戏，沉浸爱好</div>
+            <div class="opt" data-score="慕慕:2">阅读、写东西，思考内心感受</div>
+        </div>
+        <div class="question">
+            <div class="q-title">做选择的时候，你通常？</div>
+            <div class="opt" data-score="春山:2">大胆尝试，跟着热情走</div>
+            <div class="opt" data-score="桃子:2">权衡利弊，优先现实可行性</div>
+            <div class="opt" data-score="兔兔:2">凭直觉，随心随便选</div>
+            <div class="opt" data-score="肖肖:2">尽量不做复杂选择，能躺就躺</div>
+            <div class="opt" data-score="慕慕:2">遵从内心价值观，看重意义</div>
+        </div>
+        <button class="btn" id="next">下一题</button>
+    </div>
+
+    <div class="result" id="resultBox">
+        <div class="name" id="roleName"></div>
+        <div class="tag" id="roleTag"></div>
+        <p class="desc" id="roleDesc"></p>
+        <button class="btn" onclick="restart()">重新测试</button>
+    </div>
+</div>
+
+<script>
+// 角色分数
+let score = {
+    "春山":0,
+    "桃子":0,
+    "兔兔":0,
+    "肖肖":0,
+    "慕慕":0
+};
+let current = 0;
+const questions = Array.from(document.querySelectorAll('.question'));
+const totalQ = questions.length;
+const progressText = document.getElementById("progressText");
+const resultBox = document.getElementById('resultBox');
+const quizBox = document.getElementById('quiz');
+const roleName = document.getElementById('roleName');
+const roleTag = document.getElementById('roleTag');
+const roleDesc = document.getElementById('roleDesc');
+
+// 角色文案，你可以自由修改
+const roleInfo = {
+    "春山": {
+        tag: "活力青春女大学生",
+        desc: "永远带着鲜活的元气，热爱生活，愿意奔赴各种新鲜的小事。像春日山野一样明媚，感染力很强，很容易带动身边人的情绪。"
+    },
+    "桃子": {
+        tag: "打工社畜",
+        desc: "在现实里认真谋生，习惯把情绪收好。外表温和，扛得住压力，懂得权衡现实，偶尔疲惫，但依旧努力维持生活运转。"
+    },
+    "兔兔": {
+        tag: "抽象女生",
+        desc: "思维跳脱不拘一格，自带奇妙脑洞。不喜欢被常规框架束缚，看待事情角度很特别，常常能用古怪有趣的方式消解烦恼。"
+    },
+    "肖肖": {
+        tag: "宅女",
+        desc: "偏爱自己舒适的小空间，社交耗能，爱好丰富。比起热闹的人群，更愿意沉浸在自己喜欢的作品里，安静自在。"
+    },
+    "慕慕": {
+        tag: "INFJ",
+        desc: "内心世界深邃细腻，共情力强，习惯向内探索。外表看起来安静克制，心中有坚定的价值观，擅长读懂别人藏起来的情绪。"
+    }
+}
+
+// 选项点击
+document.querySelectorAll('.opt').forEach(opt=>{
+    opt.onclick = function(){
+        const siblings = this.parentElement.parentElement.querySelectorAll('.opt');
+        siblings.forEach(s=>s.classList.remove('selected'));
+        this.classList.add('selected');
+    }
+})
+
+// 更新进度
+function updateProgress(){
+    progressText.innerText = `第 ${current+1} / ${totalQ} 题`
+}
+
+document.getElementById('next').onclick = function(){
+    const q = questions[current];
+    const selected = q.querySelector('.opt.selected');
+    if(!selected){alert("请选择一项！");return;}
+    // 加分
+    const scoreStr = selected.dataset.score;
+    const [name,val] = scoreStr.split(":");
+    score[name] += Number(val);
+
+    current++;
+    if(current < questions.length){
+        q.classList.remove('active');
+        questions[current].classList.add('active');
+        updateProgress();
+    }else{
+        showResult();
+    }
+}
+
+function showResult(){
+    quizBox.style.display = "none";
+    resultBox.style.display = "block";
+    // 找出最高分角色
+    let maxKey = Object.keys(score)[0];
+    for(let k in score){
+        if(score[k] > score[maxKey]) maxKey = k;
+    }
+    const info = roleInfo[maxKey];
+    roleName.innerText = maxKey;
+    roleTag.innerText = info.tag;
+    roleDesc.innerText = info.desc;
+}
+
+function restart(){
+    score = {"春山":0,"桃子":0,"兔兔":0,"肖肖":0,"慕慕":0};
+    current=0;
+    quizBox.style.display="block";
+    resultBox.style.display="none";
+    questions.forEach(q=>q.classList.remove('active'));
+    questions[0].classList.add('active');
+    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+    updateProgress();
+}
+updateProgress();
+</script>
+</body>
+</html>
